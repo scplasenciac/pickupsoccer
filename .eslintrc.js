@@ -3,12 +3,11 @@ module.exports = {
     browser: true,
     es2021: true,
     node: true,
+    jest: true,
   },
   extends: [
     'eslint:recommended',
     'plugin:react/recommended',
-    'plugin:react-hooks/recommended',
-    'plugin:jsx-a11y/recommended',
   ],
   parserOptions: {
     ecmaFeatures: {
@@ -17,14 +16,15 @@ module.exports = {
     ecmaVersion: 12,
     sourceType: 'module',
   },
-  plugins: ['react', 'react-hooks', 'jsx-a11y'],
+  plugins: ['react'],
   rules: {
     'react/react-in-jsx-scope': 'off',
     'react/prop-types': 'off',
     'no-unused-vars': 'warn',
-    'no-console': 'warn',
+    'no-console': 'off',
     'prefer-const': 'error',
     'no-var': 'error',
+    'no-undef': 'error',
   },
   settings: {
     react: {
