@@ -18,10 +18,10 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "dev": "cp env.development .env && react-scripts start",
+    "dev": "copy env.development .env && react-scripts start",
     "build": "react-scripts build",
-    "build:dev": "cp env.development .env && react-scripts build",
-    "build:prod": "cp env.production .env && react-scripts build",
+    "build:dev": "copy env.development .env && react-scripts build",
+    "build:prod": "copy env.production .env && react-scripts build",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "test": "react-scripts test",
