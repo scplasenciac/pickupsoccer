@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Trophy, MapPin, Calendar, Users, Award, Filter } from 'lucide-react';
 
 const Torneos = () => {
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
+  const [torneos, setTorneos] = useState([]);
 
   const districts = [
     'Surco', 'San Borja', 'San Isidro', 'Miraflores', 'Surquillo'
@@ -15,6 +16,17 @@ const Torneos = () => {
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Obtener la fecha máxima (un mes desde hoy) en formato YYYY-MM-DD
+  const getMaxDate = () => {
+    const today = new Date();
+    const maxDate = new Date(today);
+    maxDate.setMonth(today.getMonth() + 1);
+    const year = maxDate.getFullYear();
+    const month = String(maxDate.getMonth() + 1).padStart(2, '0');
+    const day = String(maxDate.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
 
@@ -43,11 +55,113 @@ const Torneos = () => {
       prize: 'S/ 1500',
       entryFee: 100,
       status: 'completo'
+    },
+    {
+      id: 3,
+      title: 'Liga Nocturna',
+      location: 'Deporcentro - Surco',
+      startDate: '2024-01-30',
+      endDate: '2024-02-28',
+      teams: 6,
+      maxTeams: 8,
+      prize: 'S/ 800',
+      entryFee: 80,
+      status: 'inscripciones'
+    },
+    {
+      id: 4,
+      title: 'Copa Empresarial',
+      location: 'La Once - San Borja',
+      startDate: '2024-02-05',
+      endDate: '2024-03-05',
+      teams: 10,
+      maxTeams: 12,
+      prize: 'S/ 1200',
+      entryFee: 120,
+      status: 'inscripciones'
+    },
+    {
+      id: 5,
+      title: 'Torneo de Fin de Semana',
+      location: 'SportPoint - Surquillo',
+      startDate: '2024-02-10',
+      endDate: '2024-02-25',
+      teams: 4,
+      maxTeams: 6,
+      prize: 'S/ 600',
+      entryFee: 60,
+      status: 'inscripciones'
+    },
+    {
+      id: 6,
+      title: 'Liga Amateur',
+      location: 'La Diez - San Isidro',
+      startDate: '2024-02-15',
+      endDate: '2024-04-15',
+      teams: 14,
+      maxTeams: 16,
+      prize: 'S/ 2500',
+      entryFee: 200,
+      status: 'inscripciones'
+    },
+    {
+      id: 7,
+      title: 'Copa Rápida',
+      location: 'Deporcentro - Miraflores',
+      startDate: '2024-02-20',
+      endDate: '2024-02-22',
+      teams: 8,
+      maxTeams: 8,
+      prize: 'S/ 1000',
+      entryFee: 100,
+      status: 'inscripciones'
+    },
+    {
+      id: 8,
+      title: 'Torneo Familiar',
+      location: 'La Once - Surco',
+      startDate: '2024-02-25',
+      endDate: '2024-03-10',
+      teams: 6,
+      maxTeams: 8,
+      prize: 'S/ 900',
+      entryFee: 90,
+      status: 'inscripciones'
     }
   ];
 
+  useEffect(() => {
+    setTorneos(mockTorneos);
+  }, []);
+
   const handleFilter = () => {
+    let filteredTorneos = [...mockTorneos];
+
+    // Filtrar por distrito
+    if (selectedDistrict) {
+      filteredTorneos = filteredTorneos.filter(torneo => 
+        torneo.location.toLowerCase().includes(selectedDistrict.toLowerCase())
+      );
+    }
+
+    // Filtrar por fecha
+    if (selectedDate) {
+      filteredTorneos = filteredTorneos.filter(torneo => 
+        torneo.startDate === selectedDate
+      );
+    }
+
+    // Si no hay resultados, mostrar todos los torneos
+    if (filteredTorneos.length === 0) {
+      filteredTorneos = mockTorneos;
+    }
+
+    // Limitar a máximo 3 torneos activos
+    filteredTorneos = filteredTorneos.slice(0, 3);
+
+    setTorneos(filteredTorneos);
     console.log('Filtrando torneos por:', { selectedDistrict, selectedDate });
+    console.log('Resultados encontrados:', filteredTorneos.length);
   };
 
   return (
@@ -96,7 +210,11 @@ const Torneos = () => {
               onChange={(e) => setSelectedDate(e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               min={getTodayDate()}
+              max={getMaxDate()}
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Selecciona una fecha entre hoy y un mes
+            </p>
           </div>
 
           <button
@@ -110,7 +228,7 @@ const Torneos = () => {
 
       {/* Lista de Torneos */}
       <div className="space-y-4">
-        {mockTorneos.map(torneo => (
+        {torneos.map(torneo => (
           <div key={torneo.id} className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
             <div className="flex justify-between items-start mb-3">
               <div className="flex items-center gap-2">

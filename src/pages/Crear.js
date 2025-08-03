@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ArrowRight, MapPin, Lock, Globe, CreditCard, Shirt } from 'lucide-react';
+import { ArrowLeft, ArrowRight, MapPin, Lock, Globe, CreditCard, Shirt, ExternalLink } from 'lucide-react';
 
 const Crear = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     type: '',
+    reservationSource: '',
     date: '',
     time: '',
     venue: '',
@@ -18,9 +19,7 @@ const Crear = () => {
 
   const venues = [
     { id: 'la-diez', name: 'La Diez', location: 'Miraflores', price: 180, chalecos: true },
-    { id: 'la-once', name: 'La Once', location: 'San Isidro', price: 180, chalecos: true },
-    { id: 'sportpoint', name: 'SportPoint', location: 'Surco', price: 180, chalecos: false },
-    { id: 'deporcentro', name: 'Deporcentro', location: 'La Molina', price: 180, chalecos: false }
+    { id: 'la-once', name: 'La Once', location: 'San Isidro', price: 180, chalecos: true }
   ];
 
   const timeSlots = [
@@ -44,7 +43,7 @@ const Crear = () => {
   };
 
   const nextStep = () => {
-    if (currentStep < 8 && canProceedToNextStep()) {
+    if (currentStep < 9 && canProceedToNextStep()) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -60,22 +59,28 @@ const Crear = () => {
       case 1:
         return formData.type !== '';
       case 2:
-        return formData.date !== '';
+        return formData.reservationSource !== '';
       case 3:
-        return formData.players !== '';
+        return formData.date !== '';
       case 4:
-        return formData.time !== '';
+        return formData.players !== '';
       case 5:
-        return formData.venue !== '';
+        return formData.time !== '';
       case 6:
-        return true; // Configuración de equipos siempre es válida
+        return formData.venue !== '';
       case 7:
-        return true; // Tipo público/privado siempre es válido
+        return true; // Configuración de equipos siempre es válida
       case 8:
+        return true; // Tipo público/privado siempre es válido
+      case 9:
         return formData.paymentMethod !== '' && (formData.paymentMethod === 'transferencia' || formData.paymentMethod === 'yape');
       default:
         return false;
     }
+  };
+
+  const handleATCRedirect = () => {
+    window.open('https://atcsports.io/', '_blank');
   };
 
   const renderStep = () => {
@@ -122,6 +127,57 @@ const Crear = () => {
       case 2:
         return (
           <div className="space-y-6">
+            <h2 className="text-xl font-semibold text-gray-900">Fuente de reserva</h2>
+            <p className="text-sm text-gray-600">Selecciona cómo quieres reservar la cancha</p>
+            <div className="space-y-4">
+              <button
+                onClick={() => handleInputChange('reservationSource', 'local')}
+                className={`w-full p-4 border-2 rounded-lg text-left transition-colors ${
+                  formData.reservationSource === 'local'
+                    ? 'border-green-500 bg-green-50'
+                    : 'border-gray-200 hover:border-green-300'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <MapPin size={20} className="text-green-600" />
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Reserva local</h3>
+                    <p className="text-gray-600 text-sm">Reserva directamente a través de esta app</p>
+                    <p className="text-xs text-gray-500 mt-1">Disponible: La Diez y La Once (Fútbol 7 y 8)</p>
+                  </div>
+                </div>
+              </button>
+              <button
+                onClick={() => handleInputChange('reservationSource', 'atc')}
+                className={`w-full p-4 border-2 rounded-lg text-left transition-colors ${
+                  formData.reservationSource === 'atc'
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 hover:border-blue-300'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <ExternalLink size={20} className="text-blue-600" />
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Reserva en ATC</h3>
+                    <p className="text-gray-600 text-sm">Reserva a través de ATC Sports</p>
+                    <p className="text-xs text-gray-500 mt-1">Más opciones de canchas disponibles</p>
+                  </div>
+                </div>
+              </button>
+            </div>
+            {formData.reservationSource && (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm text-green-800">
+                  ✅ Has seleccionado: <strong>{formData.reservationSource === 'local' ? 'Reserva local' : 'Reserva en ATC'}</strong>
+                </p>
+              </div>
+            )}
+          </div>
+        );
+
+      case 3:
+        return (
+          <div className="space-y-6">
             <h2 className="text-xl font-semibold text-gray-900">Selecciona la fecha</h2>
             <p className="text-sm text-gray-600">Elige la fecha para tu evento</p>
             <div>
@@ -146,7 +202,7 @@ const Crear = () => {
           </div>
         );
 
-      case 3:
+      case 4:
         return (
           <div className="space-y-6">
             <h2 className="text-xl font-semibold text-gray-900">Número de jugadores</h2>
@@ -161,10 +217,8 @@ const Crear = () => {
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               >
                 <option value="">Selecciona</option>
-                <option value="12">6 vs 6 (12 jugadores)</option>
                 <option value="14">7 vs 7 (14 jugadores)</option>
                 <option value="16">8 vs 8 (16 jugadores)</option>
-                <option value="22">11 vs 11 (22 jugadores)</option>
               </select>
             </div>
             {formData.players && (
@@ -177,7 +231,7 @@ const Crear = () => {
           </div>
         );
 
-      case 4:
+      case 5:
         return (
           <div className="space-y-6">
             <h2 className="text-xl font-semibold text-gray-900">Horarios disponibles</h2>
@@ -199,7 +253,7 @@ const Crear = () => {
           </div>
         );
 
-      case 5:
+      case 6:
         return (
           <div className="space-y-6">
             <h2 className="text-xl font-semibold text-gray-900">Selecciona la cancha</h2>
@@ -228,7 +282,7 @@ const Crear = () => {
           </div>
         );
 
-      case 6:
+      case 7:
         return (
           <div className="space-y-6">
             <h2 className="text-xl font-semibold text-gray-900">Configuración de equipos</h2>
@@ -295,7 +349,7 @@ const Crear = () => {
           </div>
         );
 
-      case 7:
+      case 8:
         return (
           <div className="space-y-6">
             <h2 className="text-xl font-semibold text-gray-900">Tipo de partido</h2>
@@ -336,7 +390,7 @@ const Crear = () => {
           </div>
         );
 
-      case 8:
+      case 9:
         return (
           <div className="space-y-6">
             <h2 className="text-xl font-semibold text-gray-900">Método de pago</h2>
@@ -382,6 +436,44 @@ const Crear = () => {
     }
   };
 
+  // Si se selecciona ATC, mostrar redirección
+  if (formData.reservationSource === 'atc' && currentStep > 2) {
+    return (
+      <div className="p-4">
+        <div className="bg-white rounded-lg p-6 shadow-sm text-center">
+          <div className="mb-6">
+            <ExternalLink size={48} className="text-blue-600 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Redirigiendo a ATC Sports</h2>
+            <p className="text-gray-600 mb-4">
+              Serás redirigido a ATC Sports para completar tu reserva de cancha.
+            </p>
+            <p className="text-sm text-gray-500 mb-6">
+              ATC es la plataforma líder en reservas deportivas en Latinoamérica.
+            </p>
+          </div>
+          
+          <div className="space-y-3">
+            <button
+              onClick={handleATCRedirect}
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            >
+              Ir a ATC Sports
+            </button>
+            <button
+              onClick={() => {
+                handleInputChange('reservationSource', '');
+                setCurrentStep(2);
+              }}
+              className="w-full bg-gray-200 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+            >
+              Volver y cambiar opción
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4">
       {/* Header */}
@@ -390,7 +482,7 @@ const Crear = () => {
           Crear {formData.type === 'torneo' ? 'Torneo' : 'Partido'}
         </h1>
         <p className="text-gray-600">
-          Paso {currentStep} de 8
+          Paso {currentStep} de 9
         </p>
       </div>
 
@@ -399,7 +491,7 @@ const Crear = () => {
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div 
             className="bg-green-600 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${(currentStep / 8) * 100}%` }}
+            style={{ width: `${(currentStep / 9) * 100}%` }}
           ></div>
         </div>
       </div>
@@ -426,17 +518,17 @@ const Crear = () => {
         
         <button
           onClick={nextStep}
-          disabled={currentStep === 8 || !canProceedToNextStep()}
+          disabled={currentStep === 9 || !canProceedToNextStep()}
           className={`flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition-colors ${
-            currentStep === 8
+            currentStep === 9
               ? 'bg-green-600 text-white'
               : canProceedToNextStep()
               ? 'bg-green-600 text-white hover:bg-green-700'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
         >
-          {currentStep === 8 ? 'Generar Partido' : 'Siguiente'}
-          {currentStep !== 8 && <ArrowRight size={16} />}
+          {currentStep === 9 ? 'Generar Partido' : 'Siguiente'}
+          {currentStep !== 9 && <ArrowRight size={16} />}
         </button>
       </div>
     </div>

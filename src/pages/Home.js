@@ -33,6 +33,126 @@ const mockPartidos = [
     chalecos: false,
     equipoAColor: 'blanco',
     equipoBColor: 'oscuro'
+  },
+  {
+    id: 3,
+    title: 'Partido Competitivo',
+    location: 'Deporcentro - Surco',
+    date: '2024-01-18',
+    time: '18:30',
+    players: 16,
+    maxPlayers: 16,
+    distance: 3.2,
+    price: 180,
+    type: 'público',
+    chalecos: true,
+    equipoAColor: 'blanco',
+    equipoBColor: 'oscuro'
+  },
+  {
+    id: 4,
+    title: 'Fútbol 11 vs 11',
+    location: 'La Once - San Borja',
+    date: '2024-01-20',
+    time: '21:00',
+    players: 18,
+    maxPlayers: 22,
+    distance: 4.1,
+    price: 180,
+    type: 'público',
+    chalecos: false,
+    equipoAColor: 'blanco',
+    equipoBColor: 'oscuro'
+  },
+  {
+    id: 5,
+    title: 'Partido Casual',
+    location: 'SportPoint - Surquillo',
+    date: '2024-01-22',
+    time: '19:30',
+    players: 8,
+    maxPlayers: 12,
+    distance: 1.5,
+    price: 180,
+    type: 'público',
+    chalecos: true,
+    equipoAColor: 'blanco',
+    equipoBColor: 'oscuro'
+  },
+  {
+    id: 6,
+    title: 'Torneo Amistoso',
+    location: 'La Diez - San Isidro',
+    date: '2024-01-25',
+    time: '20:30',
+    players: 14,
+    maxPlayers: 14,
+    distance: 2.8,
+    price: 180,
+    type: 'público',
+    chalecos: false,
+    equipoAColor: 'blanco',
+    equipoBColor: 'oscuro'
+  },
+  {
+    id: 7,
+    title: 'Fútbol 8 vs 8',
+    location: 'Deporcentro - Miraflores',
+    date: '2024-01-28',
+    time: '18:00',
+    players: 12,
+    maxPlayers: 16,
+    distance: 2.1,
+    price: 180,
+    type: 'público',
+    chalecos: true,
+    equipoAColor: 'blanco',
+    equipoBColor: 'oscuro'
+  },
+  {
+    id: 8,
+    title: 'Partido Nocturno',
+    location: 'La Once - Surco',
+    date: '2024-01-30',
+    time: '22:00',
+    players: 10,
+    maxPlayers: 14,
+    distance: 3.5,
+    price: 180,
+    type: 'público',
+    chalecos: false,
+    equipoAColor: 'blanco',
+    equipoBColor: 'oscuro'
+  },
+  {
+    id: 9,
+    title: 'Fútbol 6 vs 6',
+    location: 'SportPoint - San Borja',
+    date: '2024-02-02',
+    time: '19:00',
+    players: 8,
+    maxPlayers: 12,
+    distance: 1.9,
+    price: 180,
+    type: 'público',
+    chalecos: true,
+    equipoAColor: 'blanco',
+    equipoBColor: 'oscuro'
+  },
+  {
+    id: 10,
+    title: 'Partido de Fin de Semana',
+    location: 'La Diez - Surquillo',
+    date: '2024-02-05',
+    time: '16:00',
+    players: 20,
+    maxPlayers: 22,
+    distance: 2.3,
+    price: 180,
+    type: 'público',
+    chalecos: false,
+    equipoAColor: 'blanco',
+    equipoBColor: 'oscuro'
   }
 ];
 
@@ -52,6 +172,17 @@ const Home = () => {
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Obtener la fecha máxima (un mes desde hoy) en formato YYYY-MM-DD
+  const getMaxDate = () => {
+    const today = new Date();
+    const maxDate = new Date(today);
+    maxDate.setMonth(today.getMonth() + 1);
+    const year = maxDate.getFullYear();
+    const month = String(maxDate.getMonth() + 1).padStart(2, '0');
+    const day = String(maxDate.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
 
@@ -75,8 +206,33 @@ const Home = () => {
   }, []);
 
   const handleFilter = () => {
-    // Lógica de filtrado
+    let filteredPartidos = [...mockPartidos];
+
+    // Filtrar por distrito
+    if (selectedDistrict) {
+      filteredPartidos = filteredPartidos.filter(partido => 
+        partido.location.toLowerCase().includes(selectedDistrict.toLowerCase())
+      );
+    }
+
+    // Filtrar por fecha
+    if (selectedDate) {
+      filteredPartidos = filteredPartidos.filter(partido => 
+        partido.date === selectedDate
+      );
+    }
+
+    // Si no hay resultados, mostrar todos los partidos
+    if (filteredPartidos.length === 0) {
+      filteredPartidos = mockPartidos;
+    }
+
+    // Limitar a máximo 3 partidos activos
+    filteredPartidos = filteredPartidos.slice(0, 3);
+
+    setPartidos(filteredPartidos);
     console.log('Filtrando por:', { selectedDistrict, selectedDate });
+    console.log('Resultados encontrados:', filteredPartidos.length);
   };
 
   const handleJoinPartido = (position, team) => {
@@ -130,8 +286,12 @@ const Home = () => {
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
               min={getTodayDate()}
+              max={getMaxDate()}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Selecciona una fecha entre hoy y un mes
+            </p>
           </div>
 
           <button

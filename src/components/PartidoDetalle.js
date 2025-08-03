@@ -3,7 +3,6 @@ import { MapPin, Calendar, Clock, User, Shield, Zap, Target, Shirt } from 'lucid
 
 const PartidoDetalle = ({ partido, onClose, onJoin }) => {
   const [selectedPosition, setSelectedPosition] = useState('');
-  const [selectedTeam, setSelectedTeam] = useState('');
   const [activeTab, setActiveTab] = useState('A');
 
   // Simular jugadores inscritos con sus posiciones
@@ -306,80 +305,50 @@ const PartidoDetalle = ({ partido, onClose, onJoin }) => {
 
           {/* Unirse al partido */}
           <div className="p-4 pb-8 border-t border-gray-200">
-            <h3 className="font-semibold text-gray-900 mb-3">Unirse al partido</h3>
-            
             {/* Selección de posición */}
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              {positions.map(position => {
-                const Icon = position.icon;
-                const currentCount = getPositionCount(position.id);
-                const maxCount = getMaxPositionCount(position.id);
-                const isAvailable = currentCount < maxCount;
-                
-                return (
-                  <button
-                    key={position.id}
-                    onClick={() => setSelectedPosition(position.id)}
-                    disabled={!isAvailable}
-                    className={`p-3 border-2 rounded-lg text-center transition-colors ${
-                      selectedPosition === position.id
-                        ? 'border-green-500 bg-green-50'
-                        : isAvailable
-                        ? 'border-gray-200 hover:border-green-300'
-                        : 'border-gray-200 bg-gray-100 opacity-50 cursor-not-allowed'
-                    }`}
-                  >
-                    <Icon size={20} className="mx-auto mb-1 text-gray-600" />
-                    <div className="font-medium text-sm">{position.label}</div>
-                    <div className="text-xs text-gray-500">
-                      {currentCount}/{maxCount}
-                    </div>
-                  </button>
-                );
-              })}
+            <div className="mb-4">
+              <h4 className="font-medium text-gray-900 mb-2">Seleccionar posición:</h4>
+              <div className="grid grid-cols-2 gap-2">
+                {positions.map(position => {
+                  const Icon = position.icon;
+                  const currentCount = getPositionCount(position.id);
+                  const maxCount = getMaxPositionCount(position.id);
+                  const isAvailable = currentCount < maxCount;
+                  
+                  return (
+                    <button
+                      key={position.id}
+                      onClick={() => setSelectedPosition(position.id)}
+                      disabled={!isAvailable}
+                      className={`p-3 border-2 rounded-lg text-center transition-colors ${
+                        selectedPosition === position.id
+                          ? 'border-green-500 bg-green-50'
+                          : isAvailable
+                          ? 'border-gray-200 hover:border-green-300'
+                          : 'border-gray-200 bg-gray-100 opacity-50 cursor-not-allowed'
+                      }`}
+                    >
+                      <Icon size={20} className="mx-auto mb-1 text-gray-600" />
+                      <div className="font-medium text-sm">{position.label}</div>
+                      <div className="text-xs text-gray-500">
+                        {currentCount}/{maxCount}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Selección de equipo */}
-            {selectedPosition && (
-              <div className="mb-4">
-                <h4 className="font-medium text-gray-900 mb-2">Seleccionar equipo:</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => setSelectedTeam('A')}
-                    className={`p-3 border-2 rounded-lg text-center transition-colors ${
-                      selectedTeam === 'A'
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-blue-300'
-                    }`}
-                  >
-                    <div className="font-medium text-sm">Equipo A</div>
-                    <div className="text-xs text-gray-500">Azul</div>
-                  </button>
-                  <button
-                    onClick={() => setSelectedTeam('B')}
-                    className={`p-3 border-2 rounded-lg text-center transition-colors ${
-                      selectedTeam === 'B'
-                        ? 'border-red-500 bg-red-50'
-                        : 'border-gray-200 hover:border-red-300'
-                    }`}
-                  >
-                    <div className="font-medium text-sm">Equipo B</div>
-                    <div className="text-xs text-gray-500">Rojo</div>
-                  </button>
-                </div>
-              </div>
-            )}
-
             <button
-              onClick={() => onJoin(selectedPosition, selectedTeam)}
-              disabled={!selectedPosition || !selectedTeam}
+              onClick={() => onJoin(selectedPosition, activeTab)}
+              disabled={!selectedPosition}
               className={`w-full py-3 rounded-lg font-medium transition-colors ${
-                selectedPosition && selectedTeam
+                selectedPosition
                   ? 'bg-green-600 text-white hover:bg-green-700'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
             >
-              Unirse como {selectedPosition ? positions.find(p => p.id === selectedPosition)?.label : 'jugador'} - Equipo {selectedTeam || 'A'}
+              Unirse como {selectedPosition ? positions.find(p => p.id === selectedPosition)?.label : 'jugador'} - Equipo {activeTab}
             </button>
           </div>
         </div>
