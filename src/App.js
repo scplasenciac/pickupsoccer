@@ -5,7 +5,7 @@ import Layout from './components/layout/Layout';
 import Home from './pages/Home';
 import Torneos from './pages/Torneos';
 import Crear from './pages/Crear';
-import Historial from './pages/Historial';
+import CanchasDisponibles from './pages/CanchasDisponibles';
 import Perfil from './pages/Perfil';
 import './App.css';
 
@@ -18,7 +18,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/torneos" element={<Torneos />} />
             <Route path="/crear" element={<Crear />} />
-            <Route path="/historial" element={<Historial />} />
+            <Route path="/canchas" element={<CanchasDisponibles />} />
             <Route path="/perfil" element={<Perfil />} />
           </Routes>
         </Layout>
