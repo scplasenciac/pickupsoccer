@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Trophy, Plus, MapPin, User } from 'lucide-react';
+import { Home, Trophy, MapPin, User } from 'lucide-react';
 
 const BottomNavigation = () => {
   const location = useLocation();
