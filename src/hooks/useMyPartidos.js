@@ -88,6 +88,9 @@ export const useMyPartidos = () => {
           ? { 
               ...partido, 
               ...detalles,
+              players: parseInt(detalles.jugadores),
+              maxPlayers: parseInt(detalles.jugadores),
+              type: detalles.tipo,
               detallesCompletados: true
             }
           : partido
@@ -100,8 +103,8 @@ export const useMyPartidos = () => {
     console.log('Partido ID:', partidoId);
     
     const partido = misPartidos.find(p => p.id === partidoId);
-    if (partido && partido.detallesCompletados) {
-      throw new Error('No puedes eliminar un partido que ya tiene detalles completados.');
+    if (partido && partido.paymentProof) {
+      throw new Error('No puedes eliminar un partido que ya tiene comprobante de pago adjunto.');
     }
     
     setMisPartidos(prev => prev.filter(partido => partido.id !== partidoId));
@@ -155,6 +158,17 @@ export const useMyPartidos = () => {
     return activos.length > 0 ? activos[0] : null;
   };
 
+  const getPartidosConfirmados = () => {
+    const confirmados = misPartidos.filter(partido => 
+      partido.status === 'confirmado' && 
+      partido.paymentProof && 
+      partido.detallesCompletados
+    );
+    console.log('=== OBTENIENDO PARTIDOS CONFIRMADOS ===');
+    console.log('Partidos confirmados:', confirmados);
+    return confirmados;
+  };
+
   return {
     misPartidos,
     crearPartido,
@@ -164,6 +178,7 @@ export const useMyPartidos = () => {
     cancelarPartido,
     adjuntarComprobante,
     getPartidosActivos,
-    getPartidoActivo
+    getPartidoActivo,
+    getPartidosConfirmados
   };
 }; 

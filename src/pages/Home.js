@@ -170,10 +170,19 @@ const Home = () => {
   const [detailsForm, setDetailsForm] = useState({
     fecha: '',
     hora: '',
-    cancha: ''
+    cancha: '',
+    jugadores: '',
+    tipo: 'público'
   });
 
-  const { misPartidos, adjuntarComprobante, actualizarDetallesPartido, eliminarPartido, crearPartido } = useMyPartidos();
+  const { 
+    misPartidos, 
+    crearPartido, 
+    adjuntarComprobante, 
+    actualizarDetallesPartido, 
+    eliminarPartido,
+    getPartidosConfirmados 
+  } = useMyPartidos();
 
   const districts = [
     'Surco', 'San Borja', 'San Isidro', 'Miraflores', 'Surquillo'
@@ -219,11 +228,61 @@ const Home = () => {
       );
     }
 
-    setPartidos(mockPartidos);
-  }, []);
+    // Combinar partidos mock con partidos confirmados del usuario
+    const partidosConfirmados = getPartidosConfirmados();
+    const partidosCombinados = [...mockPartidos];
+    
+    // Agregar partidos confirmados del usuario a la lista
+    partidosConfirmados.forEach(partido => {
+      const partidoParaLista = {
+        id: partido.id,
+        title: partido.title,
+        location: partido.cancha,
+        date: partido.fecha,
+        time: partido.hora,
+        players: partido.players,
+        maxPlayers: partido.maxPlayers,
+        distance: 0.5, // Distancia cercana ya que es del usuario
+        price: 180, // Precio estándar
+        type: partido.type,
+        chalecos: false,
+        equipoAColor: partido.equipoAColor,
+        equipoBColor: partido.equipoBColor,
+        isMyPartido: true // Marca para identificar que es del usuario
+      };
+      partidosCombinados.unshift(partidoParaLista); // Agregar al inicio
+    });
+
+    setPartidos(partidosCombinados);
+  }, [misPartidos]); // Dependencia en misPartidos para actualizar cuando cambien
 
   const handleFilter = () => {
-    let filteredPartidos = [...mockPartidos];
+    // Obtener partidos confirmados del usuario
+    const partidosConfirmados = getPartidosConfirmados();
+    const partidosCombinados = [...mockPartidos];
+    
+    // Agregar partidos confirmados del usuario a la lista
+    partidosConfirmados.forEach(partido => {
+      const partidoParaLista = {
+        id: partido.id,
+        title: partido.title,
+        location: partido.cancha,
+        date: partido.fecha,
+        time: partido.hora,
+        players: partido.players,
+        maxPlayers: partido.maxPlayers,
+        distance: 0.5,
+        price: 180,
+        type: partido.type,
+        chalecos: false,
+        equipoAColor: partido.equipoAColor,
+        equipoBColor: partido.equipoBColor,
+        isMyPartido: true
+      };
+      partidosCombinados.unshift(partidoParaLista);
+    });
+
+    let filteredPartidos = [...partidosCombinados];
 
     // Filtrar por distrito
     if (selectedDistrict) {
@@ -248,7 +307,7 @@ const Home = () => {
 
     // Si no hay resultados, mostrar todos los partidos
     if (filteredPartidos.length === 0) {
-      filteredPartidos = mockPartidos;
+      filteredPartidos = partidosCombinados;
     }
 
     // Limitar a máximo 3 partidos activos
@@ -288,11 +347,11 @@ const Home = () => {
   };
 
   const handleDetailsSubmit = () => {
-    if (detailsForm.fecha && detailsForm.hora && detailsForm.cancha && selectedMyPartido) {
+    if (detailsForm.fecha && detailsForm.hora && detailsForm.cancha && detailsForm.jugadores && selectedMyPartido) {
       actualizarDetallesPartido(selectedMyPartido.id, detailsForm);
       setShowDetailsModal(false);
       setSelectedMyPartido(null);
-      setDetailsForm({ fecha: '', hora: '', cancha: '' });
+      setDetailsForm({ fecha: '', hora: '', cancha: '', jugadores: '', tipo: 'público' });
       alert('Detalles del partido actualizados exitosamente.');
     }
   };
@@ -347,7 +406,7 @@ const Home = () => {
             }}
             className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
           >
-            Crear Partido de Prueba
+            Crear Partido
           </button>
         </div>
       );
@@ -403,6 +462,8 @@ const Home = () => {
                   <div><strong>Fecha:</strong> {partido.fecha}</div>
                   <div><strong>Hora:</strong> {partido.hora}</div>
                   <div><strong>Cancha:</strong> {partido.cancha}</div>
+                  <div><strong>Jugadores:</strong> {partido.players === 14 ? '7 vs 7' : '8 vs 8'} ({partido.players} total)</div>
+                  <div><strong>Tipo:</strong> {partido.type}</div>
                 </div>
               </div>
             )}
@@ -472,19 +533,55 @@ const Home = () => {
                     Confirmado: {partido.confirmedAt}
                   </p>
                 )}
+                <p className="text-xs text-green-700 mt-1">
+                  ✅ Tu partido ya aparece en la lista de &quot;Partidos Cercanos&quot;
+                </p>
               </div>
             )}
 
-            {/* Botón de eliminar */}
-            {!partido.detallesCompletados && (
+            {/* Botones de acción - Solo mostrar si NO tiene comprobante adjunto */}
+            {!partido.paymentProof && (
               <div className="mt-3 pt-3 border-t border-gray-100">
-                <button
-                  onClick={() => handleDeletePartido(partido)}
-                  className="text-red-600 text-sm font-medium hover:text-red-700 transition-colors flex items-center gap-2"
-                >
-                  <Trash2 size={16} />
-                  Eliminar partido
-                </button>
+                <div className="flex gap-2">
+                  {/* Botón de editar detalles - Solo si tiene detalles completados */}
+                  {partido.detallesCompletados && (
+                    <button
+                      onClick={() => {
+                        setSelectedMyPartido(partido);
+                        setDetailsForm({
+                          fecha: partido.fecha,
+                          hora: partido.hora,
+                          cancha: partido.cancha,
+                          jugadores: partido.players,
+                          tipo: partido.type
+                        });
+                        setShowDetailsModal(true);
+                      }}
+                      className="text-blue-600 text-sm font-medium hover:text-blue-700 transition-colors flex items-center gap-2"
+                    >
+                      <Edit size={16} />
+                      Editar Detalles
+                    </button>
+                  )}
+                  
+                  {/* Botón de eliminar */}
+                  <button
+                    onClick={() => handleDeletePartido(partido)}
+                    className="text-red-600 text-sm font-medium hover:text-red-700 transition-colors flex items-center gap-2"
+                  >
+                    <Trash2 size={16} />
+                    Eliminar partido
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Mensaje cuando ya no se puede editar/eliminar */}
+            {partido.paymentProof && (
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <p className="text-xs text-gray-500">
+                  ℹ️ Este partido ya no se puede editar ni eliminar porque tiene el comprobante de pago adjunto.
+                </p>
               </div>
             )}
           </div>
@@ -605,6 +702,11 @@ const Home = () => {
                 <div className="flex items-center gap-1 text-gray-600 text-sm mt-1">
                   <MapPin size={16} />
                   <span>{partido.location}</span>
+                  {partido.isMyPartido && (
+                    <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
+                      Mi partido
+                    </span>
+                  )}
                 </div>
               </div>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -640,12 +742,18 @@ const Home = () => {
                   <div className="font-bold text-green-600">S/ {Math.round(partido.price / partido.maxPlayers)}</div>
                   <div className="text-xs text-gray-500">por jugador</div>
                 </div>
-                <button 
-                  onClick={() => setSelectedPartido(partido)}
-                  className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
-                >
-                  Unirse
-                </button>
+                {!partido.isMyPartido ? (
+                  <button 
+                    onClick={() => setSelectedPartido(partido)}
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                  >
+                    Unirse
+                  </button>
+                ) : (
+                  <div className="px-4 py-2 bg-blue-100 text-blue-800 rounded-lg text-sm font-medium">
+                    Confirmado
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -790,6 +898,35 @@ const Home = () => {
                   <option value="Deporcentro Casuarinas">Deporcentro Casuarinas</option>
                 </select>
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Número de Jugadores <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={detailsForm.jugadores}
+                  onChange={(e) => setDetailsForm(prev => ({ ...prev, jugadores: e.target.value }))}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="">Selecciona el formato</option>
+                  <option value="14">7 vs 7 (14 jugadores)</option>
+                  <option value="16">8 vs 8 (16 jugadores)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tipo de Partido <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={detailsForm.tipo}
+                  onChange={(e) => setDetailsForm(prev => ({ ...prev, tipo: e.target.value }))}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="público">Público</option>
+                  <option value="privado">Privado</option>
+                </select>
+              </div>
             </div>
 
             <div className="flex gap-3 mt-6">
@@ -797,7 +934,7 @@ const Home = () => {
                 onClick={() => {
                   setShowDetailsModal(false);
                   setSelectedMyPartido(null);
-                  setDetailsForm({ fecha: '', hora: '', cancha: '' });
+                  setDetailsForm({ fecha: '', hora: '', cancha: '', jugadores: '', tipo: 'público' });
                 }}
                 className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors"
               >
@@ -805,9 +942,9 @@ const Home = () => {
               </button>
               <button
                 onClick={handleDetailsSubmit}
-                disabled={!detailsForm.fecha || !detailsForm.hora || !detailsForm.cancha}
+                disabled={!detailsForm.fecha || !detailsForm.hora || !detailsForm.cancha || !detailsForm.jugadores}
                 className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
-                  detailsForm.fecha && detailsForm.hora && detailsForm.cancha
+                  detailsForm.fecha && detailsForm.hora && detailsForm.cancha && detailsForm.jugadores
                     ? 'bg-green-600 text-white hover:bg-green-700'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
